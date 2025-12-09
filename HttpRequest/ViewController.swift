@@ -64,18 +64,22 @@ class ViewController: UIViewController, ViewGeneral {
                 print("no Hay data")
                 return
             }
-            do {
-                let decoder = JSONDecoder()
-                let pokemons: PokemonResponse = try decoder.decode(PokemonResponse.self, from: data)
-                DispatchQueue.main.async {
-                    self.successPokemon(response: pokemons)
-                }
-                
-            } catch {
-                print(error)
+            DispatchQueue.main.async {
+                self.decodeEntity(data: data)
             }
         }.resume()
     }
+    
+    private func decodeEntity(data: Data) {
+        let decoder = JSONDecoder()
+        do {
+            let pokemons: PokemonResponse = try decoder.decode(PokemonResponse.self, from: data)
+            successPokemon(response: pokemons)
+        } catch {
+            print(error)
+        }
+    }
+    
     
     func successPokemon(response: PokemonResponse) {
         dataSource = response.results
@@ -96,6 +100,19 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
         let data = dataSource[indexPath.row]
         cell.setupCell(title: data.name, subtitle: data.url)
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        print("el indice es \(indexPath.row)")
+        let pokemon = self.dataSource[indexPath.row]
+        
+        let detailVC = DetailController()
+        detailVC.pokemon = pokemon
+        guard let navigationController = self.navigationController else {
+            print("No Hay navigation controller")
+            return
+        }
+        navigationController.pushViewController(detailVC, animated: true)
     }
     
 }
